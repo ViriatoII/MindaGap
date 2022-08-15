@@ -1,2 +1,12 @@
 # fill_grid_gaps
-Fill empty grids of a panorama made from several tiles with sensefull values (mean of imediate neighbourhood)
+   Takes a single panorama image and fills the empty grid lines with neighbour-weighted values.
+   Small box sizes yield limited results but work the best with a high loop number (like 20).  Increase boxsize (s) to overcome bigger gaps. 
+   
+USAGE:   python fill_grid_gaps.py  <PANORAMA.tif> <boxsize> <loopnum> --edges <True|False>
+
+   --edges is optional parameter to blur area around grid, for smoother transitions between tiles with different exposures (EXPERIMENTAL)
+   
+   
+    27/06/2022
+    Ricardo Guerreiro
+    Resolve Biosciences
