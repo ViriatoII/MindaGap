@@ -1,4 +1,4 @@
-# fill_grid_gaps
+# MindaGap
    Takes a single panorama image and fills the empty grid lines with neighbour-weighted values.
    Small box sizes yield limited results but work the best with a high loop number (like 20).  Increase boxsize (s) to overcome bigger gaps. 
    
