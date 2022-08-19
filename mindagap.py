@@ -1,4 +1,4 @@
-doc = ''' USAGE:   python fill_grid_gaps.py  <PANORAMA.tif> <boxsize> <loopnum> --edges <True|False>
+doc = ''' USAGE:   python mindagap.py  <PANORAMA.tif> <boxsize> <loopnum> --edges <True|False>
 
    Takes a single panorama image and fills the empty grid lines with neighbour-weighted values.
    Small box sizes yield limited results but work the best with a high loop number (like 20)
@@ -62,7 +62,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Takes a single panorama image and fills the empty grid lines with neighbour-weighted values" )
     parser.add_argument("input", help="Input tif/png file with grid lines to fill")
     parser.add_argument("s", nargs = '?', type=int, default = 5,  help="Box size for gaussian kernel (bigger better for big gaps but less accurate)")
-    parser.add_argument("r", nargs = '?', type=int, default = 20, help="Number of rounds to apply gaussianBlur (more is better)")
+    parser.add_argument("r", nargs = '?', type=int, default = 40, help="Number of rounds to apply gaussianBlur (more is better)")
     parser.add_argument("-e", '--edges', nargs = '?', default = False, help="Also smooth edges near grid lines")
     args=parser.parse_args()
 
@@ -79,6 +79,15 @@ if __name__ == '__main__':
 
     # Read input; apply fill_grids function and write to file
     img = tifffile.imread(args.input) 
-    img = fill_grids(img_array=img, box_size = args.s, nloops= args.r, edges = args.edges)
+
+    # Work on composite images or z-layered tiffs
+    if len(img.shape) > 2: 
+        layers = []
+        for l in range(img.shape[0]):
+            layers.append(fill_grids(img_array=img[l,:,:], box_size = args.s, nloops= args.r, edges = args.edges))
+        img = np.array(layers )
+
+    else: # Work on 2D images
+        img = fill_grids(img_array=img, box_size = args.s, nloops= args.r, edges = args.edges)
 
     tifffile.imwrite(pathname + 'gridfilled.tif', img)
