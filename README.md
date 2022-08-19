@@ -1,11 +1,10 @@
 # MindaGap
    Takes a single panorama image and fills the empty grid lines with neighbour-weighted values.
-   Small box sizes yield limited results but work the best with a high loop number (like 20).  Increase boxsize (s) to overcome bigger gaps. 
+   Small box sizes yield limited results but work the best with a high loop number (like 40).  Increase boxsize (s) to overcome bigger gaps. 
    
-USAGE:   python fill_grid_gaps.py  <PANORAMA.tif> <boxsize> <loopnum> --edges <True|False>
+USAGE:   python mindagap.py  <PANORAMA.tif> <boxsize> <loopnum> --edges <True|False>
 
    --edges is optional parameter to blur area around grid, for smoother transitions between tiles with different exposures (EXPERIMENTAL)
-   
    
     27/06/2022
     Ricardo Guerreiro
