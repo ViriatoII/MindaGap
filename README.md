@@ -9,18 +9,21 @@ INSTALLATION
  - You need a terminal and Python installed. If you don't, follow the following:
    - I recommend the [git bash](https://github.com/git-for-windows/git/releases/download/v2.37.2.windows.2/Git-2.37.2.2-64-bit.exe) terminal to run python. Install that. 
    - Right click on the folder you want to work on. A new option exists "Git Bash here", click there. A bash terminal is open.
-   - Type python and enter. An automatic windows prompt allows you to install it. IMPORTANT: Tick the box that says "Add to PATH"
+   - Type python and enter. An automatic windows prompt allows you to install it.
+   - Enter this in the bash terminal: ```echo "alias python=' winpty python.exe'" >> ~/.bashrc```
 
-To install the python dependencies, write the following on the terminal:
+To install the python dependencies, enter the following on the terminal:
 
-```pip3 install tifffile, opencv-python  ```
+```pip3 install tifffile opencv-python  ```
    
 USAGE  
 -----------
 Open git bash terminal on your desired directory and run:    
- ```python mindagap.py  <PANORAMA.tif> <BOXSIZE> <LOOPNUM> --edges <True|False> ```
+ ```python mindagap.py  <INPUT_PANORAMA.tif>```
 
-    --edges is optional parameter to blur area around grid, for smoother transitions between tiles with different exposures (EXPERIMENTAL)
+   <BOXSIZE> Default 3. A larger number allows to overcome large gaps, but makes grid less fine
+   <LOOPNUM> Default 40. A smaller number is faster, but the result is less good.
+    --edges <True|False> is optional parameter to blur area around grid, for smoother transitions between tiles with different exposures (EXPERIMENTAL)
    
    
 Create RGB composite panorama from gapfilled images  
