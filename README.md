@@ -8,18 +8,25 @@ INSTALLATION
 
  - You need a terminal and Python installed. If you don't, do the following:
    - I recommend the [git bash](https://github.com/git-for-windows/git/releases/download/v2.37.2.windows.2/Git-2.37.2.2-64-bit.exe) terminal. Download and install it.
-   - Right click on the folder you want to work on. A new option exists "Git Bash here", click there. A bash terminal is open.
+   - Right click on any folder you want to work on. A new option exists "Git Bash here", click there. A bash terminal is open.
    - Type python and enter. An automatic windows prompt allows you to install it.
    - Enter this in the bash terminal: ```echo "alias python=' winpty python.exe'" >> ~/.bashrc ; source ~/.bashrc```
 
-To install the python dependencies, enter the following on the terminal:
+- To install the python dependencies, enter the following on the terminal:
 
 ```pip3 install tifffile opencv-python  ```
+
+- Install MindaGap:
+
+``` cd ; mkdir Programs; cd Programs ```     
+``` git clone https://github.com/ViriatoII/MindaGap/  ```
+
+
    
 USAGE  
 -----------
 Open git bash terminal on your desired directory and run:    
- ```python mindagap.py  <INPUT_PANORAMA.tif>```
+ ```python ~/Programs/MindaGap/mindagap.py  <INPUT_PANORAMA.tif>```
 
       Optional parameters:
       <BOXSIZE> Default 3. A larger number allows to overcome large gaps, but makes looses fine details in new filled grid.      
@@ -31,7 +38,7 @@ Create RGB composite panorama from gapfilled images
 -----------
 Use the extra script, like this:
 
- ```python rgb_from_z_tiles.py  -b <DAPI.tiff> -r <red_channel.tiff> -g <constructive_green_channel.tiff>  ```
+ ```python ~/Programs/MindaGap/rgb_from_z_tiles.py  -b <DAPI.tiff> -r <red_channel.tiff> -g <constructive_green_channel.tiff>  ```
 
 
 
