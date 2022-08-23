@@ -6,8 +6,8 @@
 INSTALLATION 
 ------------    
 
- - You need a terminal and Python installed. If you don't, follow the following:
-   - I recommend the [git bash](https://github.com/git-for-windows/git/releases/download/v2.37.2.windows.2/Git-2.37.2.2-64-bit.exe) terminal to run python. Install that. 
+ - You need a terminal and Python installed. If you don't, do the following:
+   - I recommend the [git bash](https://github.com/git-for-windows/git/releases/download/v2.37.2.windows.2/Git-2.37.2.2-64-bit.exe) terminal. Download and install it.
    - Right click on the folder you want to work on. A new option exists "Git Bash here", click there. A bash terminal is open.
    - Type python and enter. An automatic windows prompt allows you to install it.
    - Enter this in the bash terminal: ```echo "alias python=' winpty python.exe'" >> ~/.bashrc ; source ~/.bashrc```
