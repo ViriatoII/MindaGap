@@ -3,9 +3,15 @@
    Small box sizes yield limited results but work the best with a high loop number (like 40).  Increase boxsize to overcome bigger gaps.
    
    
-INSTALLATION
+INSTALLATION 
 ------------    
-I recommend the [git bash](https://git-scm.com/download/win) terminal to run python. To install the python dependencies, write the following on the terminal:
+
+ - You need a terminal and Python installed. If you don't, follow the following:
+   - I recommend the [git bash](https://github.com/git-for-windows/git/releases/download/v2.37.2.windows.2/Git-2.37.2.2-64-bit.exe) terminal to run python. Install that. 
+   - Right click on the folder you want to work on. A new option exists "Git Bash here", click there. A bash terminal is open.
+   - Type python and enter. An automatic windows prompt allows you to install it. IMPORTANT: Tick the box that says "Add to PATH"
+
+To install the python dependencies, write the following on the terminal:
 
 ```pip3 install tifffile, opencv-python  ```
    
