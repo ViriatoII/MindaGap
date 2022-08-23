@@ -16,6 +16,15 @@ Open git bash terminal on your desired directory and run:
 
     --edges is optional parameter to blur area around grid, for smoother transitions between tiles with different exposures (EXPERIMENTAL)
    
+   
+Create RGB composite panorama from gapfilled images  
+-----------
+Use the extra script, like this:
+
+ ```python rgb_from_z_tiles.py  -b <DAPI.tiff> -r <red_channel.tiff> -g <constructive_green_channel.tiff>  ```
+
+
+
     27/06/2022
     Ricardo Guerreiro
     Resolve Biosciences
