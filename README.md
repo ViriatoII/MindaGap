@@ -5,7 +5,7 @@
    
 INSTALLATION
 ------------    
-I recommend the [git bash](https://git-scm.com/download/win) terminal to run python, which you need installed. To install dependencies, write the following on the terminal:
+I recommend the [git bash](https://git-scm.com/download/win) terminal to run python. To install the python dependencies, write the following on the terminal:
 
 ```pip3 install tifffile, opencv-python  ```
    
