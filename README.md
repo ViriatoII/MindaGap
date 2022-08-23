@@ -21,9 +21,10 @@ USAGE
 Open git bash terminal on your desired directory and run:    
  ```python mindagap.py  <INPUT_PANORAMA.tif>```
 
-   <BOXSIZE> Default 3. A larger number allows to overcome large gaps, but makes grid less fine
-   <LOOPNUM> Default 40. A smaller number is faster, but the result is less good.
-    --edges <True|False> is optional parameter to blur area around grid, for smoother transitions between tiles with different exposures (EXPERIMENTAL)
+      Optional parameters:
+      <BOXSIZE> Default 3. A larger number allows to overcome large gaps, but makes looses fine details in new filled grid.      
+      <LOOPNUM> Default 40. A smaller number is faster, but the result is less good.       
+      --edges <True|False> is optional parameter to blur area around grid, for smoother transitions between tiles with different exposures (EXPERIMENTAL).   
    
    
 Create RGB composite panorama from gapfilled images  
