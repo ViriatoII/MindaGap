@@ -119,7 +119,7 @@ if __name__ == '__main__':
             # Small blur of constructive signal
             # Limit min and max values (a pseudo-binarization)
             #g[g>10] = 10                      # Before gaussian intended 
-            g = cv2.GaussianBlur(g,(5,5), 0)  
+            #g = cv2.GaussianBlur(g,(5,5), 0)  
             #g[g<4] = 0                    
 
 
@@ -128,11 +128,14 @@ if __name__ == '__main__':
                 thresh = 250 * args.correct_ilum # Arbitrary threshold to avoid areas outside tissue to be normalized up
 
                 # Blurs used for tile normalization
-                rblur = cv2.GaussianBlur(r,(501,501),0)   
+                #rblur = cv2.GaussianBlur(r,(501,501),0)          
+                bblur = cv2.GaussianBlur(r,(51,51),0)   
 
                 # Normalize WGA staining based on overall exposition flow (with large gaussian blur)  (DAPI does not work well)
-                rblur [rblur < thresh] = thresh       
-                r = r / rblur
+                #rblur [rblur < thresh] = thresh       
+                #r = r / rblur
+
+                b = b/bblur    
 
                 # Anyway limit maximum WGA
                 #r [r> np.percentile(r,99)] = np.percentile(r,99)
