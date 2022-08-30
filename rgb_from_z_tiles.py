@@ -52,7 +52,7 @@ if __name__ == '__main__':
     parser.add_argument('-g', '--green', nargs = '?', default = None,  help="Constructive signal tif")  
     parser.add_argument('-gp', '--green_padding', type=int, default = 4, help="Add X green layers around asked Z layer")  
     parser.add_argument('-bp', '--blue_padding',  type=int, default = 2, help="Average X blue layers around asked Z layer")  
-    parser.add_argument('-corr', '--correct_ilum', type=float, default = 2, help="Correct ilumination for Red channel. 1.0 to 3.0 for fine tunning. 0 to turn off.")  
+    parser.add_argument('-corr', '--correct_ilum', type=float, default = None, help="Correct ilumination for Red channel. 1.0 to 3.0 for fine tunning. 0 to turn off.")  
     requiredNamed = parser.add_argument_group('Mandatory named arguments')
     requiredNamed.add_argument('-b', '--blue',  help="DAPI tif", required = True) 
     requiredNamed.add_argument('-z', '--z', nargs = '?',  help="The desired Z layers to keep")   # type=int, default = 5,
@@ -127,19 +127,22 @@ if __name__ == '__main__':
             if args.correct_ilum:     
                 thresh = 250 * args.correct_ilum # Arbitrary threshold to avoid areas outside tissue to be normalized up
 
+                print("CORR:", r.max())
                 # Blurs used for tile normalization
-                #rblur = cv2.GaussianBlur(r,(501,501),0)          
-                bblur = cv2.GaussianBlur(r,(51,51),0)   
+                rblur = cv2.GaussianBlur(r,(501,501),0)          
+ #               bblur = cv2.GaussianBlur(r,(51,51),0)   
 
                 # Normalize WGA staining based on overall exposition flow (with large gaussian blur)  (DAPI does not work well)
-                #rblur [rblur < thresh] = thresh       
-                #r = r / rblur
+                rblur [rblur < thresh] = thresh       
+                r = r / rblur
 
-                b = b/bblur    
+#                b = b/bblur    
 
                 # Anyway limit maximum WGA
-                #r [r> np.percentile(r,99)] = np.percentile(r,99)
+                r [r> np.percentile(r,99.99)] = np.percentile(r,99.99)
 
+                print("CORR:", r.max())
+            exit()
             ##################################################
 
             # Expand range to 0-255 for max contrast
@@ -158,7 +161,28 @@ if __name__ == '__main__':
 
         g = green 
         r = red 
-        b = blue 
+        b = blue
+
+
+            ############# Illumination correction ############
+        if args.correct_ilum:
+            thresh = 250 * args.correct_ilum # Arbitrary threshold to avoid areas outside tissue to be normalized up
+
+            print("CORR:", r.max())
+            # Blurs used for tile normalization
+            rblur = cv2.GaussianBlur(r,(501,501),0)
+            bblur = cv2.GaussianBlur(r,(351,351),0)
+
+            # Normalize WGA staining based on overall exposition flow (with large gaussian blur)  (DAPI does not work well)
+            rblur [rblur < thresh] = thresh
+            r = r / rblur
+
+            b = b/bblur
+
+            # Anyway limit maximum WGA
+            r [r> np.percentile(r,99.99)] = np.percentile(r,99.99)
+
+            print("CORR:", r.max())
 
         # Small blur of constructive signal
         # Limit min and max values (a pseudo-binarization)
