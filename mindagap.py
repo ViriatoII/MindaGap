@@ -54,11 +54,12 @@ if __name__ == '__main__':
     import os,glob, argparse
     from scipy.signal import convolve2d
     import numpy as np
-    import tifffile, cv2  
-   
     #increase max allowed image size
     os.environ["OPENCV_IO_MAX_IMAGE_PIXELS"] = pow(2,40).__str__()
+
+    import tifffile, cv2  
    
+
     parser = argparse.ArgumentParser(description="Takes a single panorama image and fills the empty grid lines with neighbour-weighted values" )
     parser.add_argument("input", help="Input tif/png file with grid lines to fill")
     parser.add_argument("s", nargs = '?', type=int, default = 5,  help="Box size for gaussian kernel (bigger better for big gaps but less accurate)")
@@ -67,20 +68,22 @@ if __name__ == '__main__':
     args=parser.parse_args()
 
     if args.s % 2 == 0:
-        print("-s argument must be uneven number")
-        exit()
+        print("-s argument must be uneven number") ; exit()
 
     # Sanity checks of input
     pathname, extension = os.path.splitext(args.input)
 
     if os.path.exists(args.input) == False:
-        print("Input file does not exist!")
-        exit()
+        print("Input file does not exist!") ; exit()
 
-    # Read input; apply fill_grids function and write to file
-    img = tifffile.imread(args.input) 
+    # Read input as tif file or as png/
+    if extension[:3] == 'tif':
+        img = tifffile.imread(args.input) 
+    else:
+        img = plt.imread(args.input)
 
-    # Work on composite images or z-layered tiffs
+    # Apply fill_grids function and write to file #####
+        # Work on composite images or z-layered tiffs
     if len(img.shape) > 2: 
         layers = []
         for l in range(img.shape[0]):
