@@ -54,6 +54,8 @@ if __name__ == '__main__':
     import os,glob, argparse
     from scipy.signal import convolve2d
     import numpy as np
+    import matplotlib.pyplot as plt
+
     #increase max allowed image size
     os.environ["OPENCV_IO_MAX_IMAGE_PIXELS"] = pow(2,40).__str__()
 
@@ -77,7 +79,7 @@ if __name__ == '__main__':
         print("Input file does not exist!") ; exit()
 
     # Read input as tif file or as png/
-    if extension[:3] == 'tif':
+    if extension[1:4] == 'tif':
         img = tifffile.imread(args.input) 
     else:
         img = plt.imread(args.input)
@@ -93,4 +95,10 @@ if __name__ == '__main__':
     else: # Work on 2D images
         img = fill_grids(img_array=img, box_size = args.s, nloops= args.r, edges = args.edges)
 
-    tifffile.imwrite(pathname + 'gridfilled.tif', img)
+
+
+    # Read input as tif file or as png/
+    if extension[1:4] == 'tif':
+        tifffile.imwrite(pathname + 'gridfilled' + extension, img)
+    else:
+        plt.imsave(pathname + 'gridfilled' + extension, img)
