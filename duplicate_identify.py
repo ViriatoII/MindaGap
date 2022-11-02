@@ -184,7 +184,7 @@ if __name__ == '__main__':
             if max(shift) > 2:
 
                 #### Confirm duplications through mutual best partner and distance #####
-                for i in df1.index: #[left]:
+                for i in df1.index[left]:
 
                     p1 = pointi(i,shift)
                     bp1 = p1.best_partner
