@@ -1,4 +1,4 @@
-doc = ''' USAGE:   python duplicate_removal.py  <geneXYZ.txt> <tilesize> 
+doc = ''' USAGE:   python duplicate_finder.py  <geneXYZ.txt> <tilesize> 
     (EXPERIMENTAL)
 
    Takes a single XYZ_coordinates.txt file and searches for duplicates along grid happening at every 2144 pixels.
