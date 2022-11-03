@@ -67,8 +67,9 @@ def find_pot_partners (xyzDF, bool_IDs, direction ='horizontal' ):
                         # Separated handeling for vertical and horizontal grid lines 
                         if direction == 'vertical':
                             if abs(partner.y - y1) <7: 
-                                if partner.x - x1  >3 and x1 - partner.x > -25 : # Potential partner has been found  
+                                if partner.x - x1  >2 and partner.x - x1 < 25 :  # Do not consider very large parallel distances (far left transcript only connects with transcripts on the left of panel2)
 
+                                    # Potential partner has been found  
                                     pair_xdists.append(partner.x - x1) 
                                     pair_ydists.append(partner.y - y1) 
                                     pair_zdists.append(partner.z - z1) 
@@ -78,8 +79,9 @@ def find_pot_partners (xyzDF, bool_IDs, direction ='horizontal' ):
 
                         elif direction == 'horizontal':
                             if abs(partner.x - x1) <7: 
-                                if partner.y - y1  >3 and y1 - partner.y > -25 : # Potential partner has been found  
+                                if partner.y - y1  >2 and partner.y - y1 < 25 : # Do not consider very large parallel distances (far left transcript only connects with transcripts on the left of panel2)
 
+                                    # Potential partner has been found  
                                     pair_xdists.append(partner.x - x1) 
                                     pair_ydists.append(partner.y - y1) 
                                     pair_zdists.append(partner.z - z1) 
@@ -159,7 +161,7 @@ if __name__ == '__main__':
     for yjump in range(0, panoYmax, tilesize):
         ymin,ymax = yjump,yjump + tilesize
 
-        for xjump in range(tilesize, panoXmax, tilesize):
+        for xjump in range(tilesize-1, panoXmax, tilesize):
 
             xmin,xmax = xjump - 30, xjump + 30
 
