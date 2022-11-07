@@ -47,3 +47,20 @@ Use the extra script, like this:
     Resolve Biosciences
     
     
+
+Docker  
+-----------
+To use MindaGap with Docker, you can follow the steps below to build the Docker image and then execute the script using a docker container with all required dependencies available:
+
+```
+## Clone this git repository
+git clone https://github.com/ViriatoII/MindaGap.git
+cd MindaGap
+
+## Build docker image
+docker build -t mindagap .
+
+## Test that docker build worked successfully
+docker run --rm -it mindagap:latest \
+python /mindagap/mindagap.py
+```
