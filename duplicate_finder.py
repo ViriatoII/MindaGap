@@ -31,6 +31,7 @@ def mode3D(xs,ys,zs):
     
     # Get most common coordinate string and return it as numbers
     count = pd.Series(str_transform).value_counts()
+    #print(count)
 
     # If there is a matrix with counts
         ## If the most common count is bigger than 5  (maybe bigger than 10 is better?)
@@ -41,14 +42,94 @@ def mode3D(xs,ys,zs):
             return(np.array([int(c) for c in best]))
 
     # Reaches this point if almost none or none potential duplicates are found
-    print('Probably no duplication between tiles')
+    print(f'Probably no duplication between tiles Y{xmin}:{xmax}, X{ymin}:{ymax}')
     return([0,0,0])
+
+def find_pot_partners_horizontal (xyzDF, bool_IDs):
+    ''' Look for partners (same gene) in other side of the grid'''
+    partners,dists = {}, {}
+    pair_xdists, pair_ydists, pair_zdists = [] ,[], []                                 
+    common_gen = xyzDF[bool_IDs].gene.value_counts().index[0]  if  xyzDF.gene.value_counts()[0]>30 else 'None'
+
+    print('horizontal') ; #print(xyzDF[bool_IDs].gene.value_counts())
+
+    for i,(og_i,x1,y1,z1,gen1,nada,partners) in xyzDF[bool_IDs].iterrows():
+
+        # Check neighbours before and after (it's sorted by y values)
+        for n in [*range(-30,0)]+[*range(1,30)]:  #-1,-2       
+            if i +n > 0 and i+n < pNUM and xyzDF.x[i+n]>x1-7:
+                if xyzDF.x[i+n]>x1+7: break # Quit searching if neighbors are far in y axis
+
+                partner = xyzDF.loc[i+n]
+                #print('horizontal',  x1,y1,z1, partner.x,partner.y,partner.z, gen1, partner.gene)
+
+                # Partner is good if same gene, on the other side of grid, is within 10 pixels in Y direction and 5 in Z.
+                if partner.gene == gen1 != common_gen: # and partner.y >= yjump: 
+                    #print(abs(partner.x - x1), partner.y - y1, abs(partner.z - z1), gen1, partner.gene)
+                    #print('horizontal',  gen1, partner.gene, common_gen)
+                    #print(abs(partner.z - z1), abs(partner.x - x1))
+
+                    #print(abs(partner.x - x1), partner.y - y1, abs(partner.z - z1))
+
+
+                    if abs(partner.z - z1) <7 and abs(partner.x - x1) <7: 
+                        if partner.y - y1  >2 and partner.y - y1 < 25: # Do not consider very large parallel distances (far left transcript only connects with transcripts on the left of panel2)
+
+                            # Potential partner has been found  
+                            pair_xdists.append(partner.x - x1) 
+                            pair_ydists.append(partner.y - y1) 
+                            pair_zdists.append(partner.z - z1) 
+
+                            partners.append(partner['index']) 
+                            xyzDF.loc[old_ids[partner['index']],'partners'].append(og_i) 
+
+    return(pair_xdists,pair_ydists,pair_zdists)
+
+def find_pot_partners_vertical (xyzDF, bool_IDs):
+    ''' Look for partners (same gene) in other side of the grid'''
+    partners,dists = {}, {}
+    pair_xdists, pair_ydists, pair_zdists = [] ,[], []                                 
+    common_gen = xyzDF.gene.value_counts().index[0]  if  xyzDF.gene.value_counts()[0]>30 else 'None'
+
+    print('vertical'); #    print(xyzDF[bool_IDs].gene.value_counts())
+
+    for i,(og_i,x1,y1,z1,gen1,nada,partners) in xyzDF[bool_IDs].iterrows():
+
+        # Check neighbours before and after (it's sorted by y values)
+        for n in [*range(-30,0)]+[*range(1,30)]:  #-1,-2       
+            if i +n > 0 and i+n < pNUM and xyzDF.y[i+n]>y1-7:
+
+                if xyzDF.y[i+n]>y1+7: break # Quit searching if neighbors are far in y axis
+
+                partner = xyzDF.loc[i+n]
+                #print('vertical',  x1,y1,z1, partner.x,partner.y,partner.z, gen1, partner.gene)
+
+                #print(abs(partner.x - x1), partner.y - y1, abs(partner.z - z1))
+
+                # Partner is good if same gene, on the other side of grid, is within 10 pixels in Y direction and 5 in Z.
+                if partner.gene == gen1 != common_gen and partner.x >= xjump: 
+                    if abs(partner.z - z1) <7 and abs(partner.y - y1) <7: 
+
+                        if partner.x - x1  >2 and partner.x - x1 < 25: # Do not consider very large parallel distances (far left transcript only connects with transcripts on the left of panel2)
+
+                            # Potential partner has been found  
+                            pair_xdists.append(partner.x - x1) 
+                            pair_ydists.append(partner.y - y1) 
+                            pair_zdists.append(partner.z - z1) 
+
+                            partners.append(partner['index']) 
+                            xyzDF.loc[old_ids[partner['index']],'partners'].append(og_i) 
+
+    return(pair_xdists,pair_ydists,pair_zdists)
 
 def find_pot_partners (xyzDF, bool_IDs, direction ='horizontal' ):
     ''' Look for partners (same gene) in other side of the grid'''
     partners,dists = {}, {}
     pair_xdists, pair_ydists, pair_zdists = [] ,[], []                                 
-    common_gen = xyzDF.gene.value_counts().index[0]
+    common_gen = xyzDF.gene.value_counts().index[0]  if  xyzDF.gene.value_counts()[0]>30 else 'None'
+
+
+    #print(xyzDF[bool_IDs].gene.value_counts())
 
     for i,(og_i,x1,y1,z1,gen1,nada,partners) in xyzDF[bool_IDs].iterrows():
 
@@ -60,14 +141,17 @@ def find_pot_partners (xyzDF, bool_IDs, direction ='horizontal' ):
 
                 partner = xyzDF.loc[i+n]
 
-                # Partner is good if same gene, on the other side of grid, is within 10 pixels in Y direction and 5 in Z.
-                if partner.gene == gen1 != common_gen and partner.x > tilesize:  
-                    if abs(partner.z - z1) <7: 
 
+                # Partner is good if same gene, on the other side of grid, is within 10 pixels in Y direction and 5 in Z.
+                if partner.gene == gen1 != common_gen: # and partner.x > xjump: 
+
+                    print(direction,   gen1, partner.gene, common_gen)
+
+                    if abs(partner.z - z1) <7 and (i+n) in  bool_IDs.index: 
                         # Separated handeling for vertical and horizontal grid lines 
                         if direction == 'vertical':
                             if abs(partner.y - y1) <7: 
-                                if partner.x - x1  >2 and partner.x - x1 < 25 :  # Do not consider very large parallel distances (far left transcript only connects with transcripts on the left of panel2)
+                                if partner.x - x1  >2 and partner.x - x1 < 25:  # Do not consider very large parallel distances (far left transcript only connects with transcripts on the left of panel2)
 
                                     # Potential partner has been found  
                                     pair_xdists.append(partner.x - x1) 
@@ -79,7 +163,7 @@ def find_pot_partners (xyzDF, bool_IDs, direction ='horizontal' ):
 
                         elif direction == 'horizontal':
                             if abs(partner.x - x1) <7: 
-                                if partner.y - y1  >2 and partner.y - y1 < 25 : # Do not consider very large parallel distances (far left transcript only connects with transcripts on the left of panel2)
+                                if partner.y - y1  >2 and partner.y - y1 < 25: # Do not consider very large parallel distances (far left transcript only connects with transcripts on the left of panel2)
 
                                     # Potential partner has been found  
                                     pair_xdists.append(partner.x - x1) 
@@ -125,7 +209,7 @@ class pointi:
             self.best_partner = self.partners[min_sd]
     
 
-#################################################################################
+###########################   MAIN  ##############################################
 
                         
 if __name__ == '__main__':
@@ -139,17 +223,18 @@ if __name__ == '__main__':
     parser.add_argument("tilesize", nargs = '?', type=int, default = 2144,  help="Tile size (distance between gridlines)")
     args=parser.parse_args()
 
-
     # Sanity checks of input
     pathname, extension = os.path.splitext(args.input)
 
     if os.path.exists(args.input) == False:
-        print("Input file does not exist!")
-        exit()
+        print("Input file does not exist!");         exit()
 
     # Read input
     df = pd.read_csv(args.input, sep = '\t', header = None)  # '../../../13_rois_for_demo/panoramas/RiceRoot_Transcripts.txt', sep = '\t', header = None)
     df.columns = ['x','y','z','gene','qual']
+
+    # To test if it works on horizontal
+    #t = df.x.copy() ;     df.x = df.y ;     df.y = t 
     
     print('read input xyz dataframe')
 
@@ -176,7 +261,7 @@ if __name__ == '__main__':
             old_ids = {k:i for i,k in enumerate(df1['index'])}
 
             # Find potential partners and report the XYZ distances between them
-            pair_xdists,pair_ydists,pair_zdists = find_pot_partners(df1, left, 'vertical')
+            pair_xdists,pair_ydists,pair_zdists = find_pot_partners_vertical(df1, left)
 
             # Use original index again and find mode of XYZ shift between potential duplicates
             df1 = df1.set_index('index')
@@ -210,7 +295,7 @@ if __name__ == '__main__':
 
             # Filtered points for only one grid line 
             df1 = df[(df.x > xmin)*(df.x < xmax) *
-                     (df.y > ymin)*(df.y < ymax)].sort_values('y').reset_index()
+                     (df.y > ymin)*(df.y < ymax)].sort_values('x').reset_index()
 
             pNUM = len(df1)
             bottom = df1.y < yjump
@@ -219,7 +304,7 @@ if __name__ == '__main__':
             old_ids = {k:i for i,k in enumerate(df1['index'])}
 
             # Find potential partners and report the XYZ distances between them
-            pair_xdists,pair_ydists,pair_zdists = find_pot_partners(df1, bottom, 'horizontal')
+            pair_xdists,pair_ydists,pair_zdists = find_pot_partners_horizontal(df1, bottom)
 
             # Use original index again and find mode of XYZ shift between potential duplicates
             df1 = df1.set_index('index')
