@@ -96,9 +96,8 @@ if __name__ == '__main__':
         img = fill_grids(img_array=img, box_size = args.s, nloops= args.r, edges = args.edges)
 
 
-
     # Read input as tif file or as png/
     if extension[1:4] == 'tif':
-        tifffile.imwrite(pathname + 'gridfilled' + extension, img)
+        tifffile.imwrite(pathname + '_gridfilled' + extension, img)
     else:
-        plt.imsave(pathname + 'gridfilled' + extension, img)
+        plt.imsave(pathname + '_gridfilled' + extension, img)
