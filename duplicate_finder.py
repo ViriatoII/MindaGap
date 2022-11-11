@@ -37,7 +37,6 @@ def mode3D(xs,ys,zs, minMode):
     if len(count):
 
         check_rows = min([3, len(count)])
-
         best = [np.array(x.split(','), dtype=int) for x in count.index[:check_rows]]
 
         # Sum counts of second and third mode if they are very close to first mode
@@ -118,7 +117,6 @@ def find_pot_partners_vertical (xyzDF, bool_IDs,max_freq):
             else: break
     else: return([0,0,0])
                         
-    #print('vertical'); #    print(xyzDF[bool_IDs].gene.value_counts())
 
     for i,(og_i,x1,y1,z1,gen1,partners) in xyzDF[bool_IDs].iterrows():
 
@@ -229,6 +227,10 @@ if __name__ == '__main__':
             df1 = df[(df.x > xmin)*(df.x < xmax) *
                      (df.y > ymin)*(df.y < ymax)].sort_values('y').reset_index()
 
+            if df1.empty:
+                print(f'Found no transcripts within Y{xmin}:{xmax}, X{ymin}:{ymax}')
+                continue     
+
             pNUM = len(df1) 
             left = df1.x < xjump
             df1['partners'] = np.empty((len(df1), 0)).tolist()
@@ -272,6 +274,10 @@ if __name__ == '__main__':
             df1 = df[(df.x > xmin)*(df.x < xmax) *
                      (df.y > ymin)*(df.y < ymax)].sort_values('x').reset_index()
 
+            if df1.empty:
+                print(f'Found no transcripts within Y{xmin}:{xmax}, X{ymin}:{ymax}')
+                continue   
+
             pNUM = len(df1)
             bottom = df1.y < yjump
             df1['partners'] = np.empty((len(df1), 0)).tolist()
@@ -297,11 +303,8 @@ if __name__ == '__main__':
                         p2 = pointi(bp1,shift)
                         bp2 = p2.best_partner
                         
-                        #if p1.point.gene != df1.gene.value_counts().index[0]:
-
                         if i == bp2 and p1.best_multdist < 20:   # multdist is distance multiplied by weight vector [6,6,1], so Z variation is 6 times less relevant than XY variation
                             duplicated.append(i ) 
-
 
                 #print(xmin,xmax, ymin,ymax, pNUM, len(duplicated))            
             
