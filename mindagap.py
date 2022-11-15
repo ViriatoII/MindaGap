@@ -58,19 +58,24 @@ if __name__ == '__main__':
 
     #increase max allowed image size
     os.environ["OPENCV_IO_MAX_IMAGE_PIXELS"] = pow(2,40).__str__()
+    
+    version_number = "0.0.1"
 
     import tifffile, cv2  
-   
 
     parser = argparse.ArgumentParser(description="Takes a single panorama image and fills the empty grid lines with neighbour-weighted values" )
     parser.add_argument("input", help="Input tif/png file with grid lines to fill")
     parser.add_argument("s", nargs = '?', type=int, default = 5,  help="Box size for gaussian kernel (bigger better for big gaps but less accurate)")
     parser.add_argument("r", nargs = '?', type=int, default = 40, help="Number of rounds to apply gaussianBlur (more is better)")
     parser.add_argument("-e", '--edges', nargs = '?', default = False, help="Also smooth edges near grid lines")
+    parser.add_argument("-v", '--version', action=argparse.BooleanOptionalAction, default = False, help="Print version number.")
     args=parser.parse_args()
 
     if args.s % 2 == 0:
         print("-s argument must be uneven number") ; exit()
+        
+    if args.version:
+        print(version_number) ; exit()
 
     # Sanity checks of input
     pathname, extension = os.path.splitext(args.input)
