@@ -43,6 +43,8 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/mindagap:${{ steps.meta.outputs.tags }}
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          #tags: ${{ secrets.DOCKER_USERNAME }}/mindagap:${{ steps.meta.outputs.tags }}
+          #labels: ${{ steps.meta.outputs.labels }}
           #tags: ${{ secrets.DOCKER_USERNAME }}/mindagap:latest
