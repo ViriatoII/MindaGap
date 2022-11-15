@@ -1,8 +1,6 @@
 name: Docker_publish
 
 on:
-  schedule:
-    - cron: '40 19 * * *'
   push:
     branches: [ "main" ]
     # Publish semver tags as releases.
@@ -43,10 +41,10 @@ jobs:
           context: .
           file: ./Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
-          #tags: ${{ secrets.DOCKER_USERNAME }}/mindagap:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/mindagap:latest
           #tags: ${{ secrets.DOCKER_USERNAME }}/mindagap:${{ steps.meta.outputs.tags }}
-          tags: ${{ steps.meta.outputs.tags }} 
-          #labels: ${{ steps.meta.outputs.labels }}
+          #tags: ${{ steps.meta.outputs.tags }} 
+          labels: ${{ steps.meta.outputs.labels }}
           
-      - name: Image digest
-        run: echo ${{ steps.docker_build.outputs.digest }} ${{ steps.meta.outputs.tags }}
+      #- name: Image digest
+       # run: echo ${{ steps.docker_build.outputs.digest }} ${{ steps.meta.outputs.tags }}
