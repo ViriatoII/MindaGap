@@ -50,9 +50,17 @@ Use the extra script, like this:
 
 Docker  
 -----------
-To use MindaGap with Docker, you can follow the steps below to build the Docker image and then execute the script using a docker container with all required dependencies available:
+To use MindaGap with Docker, you can pull the prebuild docker image from Dockerhub or follow the steps below to build the Docker image.
+
+You can then execute the script using a docker container with all required dependencies available:
 
 ```
+## Pull the prebuild docker image from Docker hub
+docker pull rguerr/mindagap:latest
+```
+
+```
+#### To build the docker image yourself
 ## Clone this git repository
 git clone https://github.com/ViriatoII/MindaGap.git
 cd MindaGap
