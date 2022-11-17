@@ -1,6 +1,9 @@
 # MindaGap
    Takes a single panorama image and fills the empty grid lines with neighbour-weighted values.
    Small box sizes yield limited results but work the best with a high loop number (like 40).  Increase boxsize to overcome bigger gaps.
+ 
+   Ricardo Guerreiro,   <b> [Resolve Biosciences GmbH](https://resolvebiosciences.com/)   </b>
+   
    
    
 INSTALLATION 
@@ -34,17 +37,18 @@ Open git bash terminal on your desired directory and run:
       --edges <True|False> is optional parameter to blur area around grid, for smoother transitions between tiles with different exposures (EXPERIMENTAL).   
    
    
-Create RGB composite panorama from gapfilled images  
------------
-Use the extra script, like this:
+ # Additional scripts
+   
+### Create RGB composite panorama from gapfilled images  
 
  ```python ~/Programs/MindaGap/rgb_from_z_tiles.py  -b <DAPI.tiff> -r <red_channel.tiff> -g <constructive_green_channel.tiff>  ```
 
+### Mark duplicate reads along gridline edges 
+
+ ```python ~/Programs/MindaGap/duplicate_finder.py  <XYZ_coordinates.csv>   ```
 
 
-    27/06/2022
-    Ricardo Guerreiro
-    Resolve Biosciences
+
     
     
 
