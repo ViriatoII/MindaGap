@@ -1,4 +1,4 @@
-doc = ''' USAGE:   python duplicate_finder.py  <geneXYZ.txt> <tilesize> 
+doc = ''' USAGE:   python duplicate_finder.py  <geneXYZ.txt> <Xtilesize> <Ytilesize> 
     (EXPERIMENTAL)
 
    Takes a single XYZ_coordinates.txt file and searches for duplicates along grid happening at every 2144 pixels.
@@ -17,7 +17,7 @@ doc = ''' USAGE:   python duplicate_finder.py  <geneXYZ.txt> <tilesize>
    - The input dataframe is written as output, and duplicates are marked as such in the gene name.
    
    
-    02/1/2022
+    02/11/2022
     Ricardo Guerreiro
     Resolve Biosciences'''
 
@@ -47,19 +47,20 @@ def mode3D(xs,ys,zs, minMode):
         ## If the most common count is bigger than minMode, shift is accepted as valid
         if count [0] > minMode: 
 
-            print(f'At least {count [0]} duplications between tiles Y{xmin}:{xmax}, X{ymin}:{ymax}')
+            #print(f'At least {count [0]} duplications between tiles Y{xmin}:{xmax}, X{ymin}:{ymax}')
 
             best = count.index[0].split(',')
             return(np.array([int(c) for c in best]))
 
     # Reaches this point if almost none or no potential duplicates are found
-    print(f'Probably no duplication between tiles Y{xmin}:{xmax}, X{ymin}:{ymax}')
+    #print(f'Probably no duplication between tiles Y{xmin}:{xmax}, X{ymin}:{ymax}')
     return([0,0,0])
 
 def find_pot_partners_horizontal (xyzDF, bool_IDs,max_freq):
     ''' Look for partners (same gene) in other side of the grid'''
     partners,dists = {}, {}
     pair_xdists, pair_ydists, pair_zdists = [] ,[], []    
+    pNUM = len(xyzDF) 
 
     # Deal with empty input and filter out too common genes
     if len(bool_IDs) > 0: 
@@ -103,7 +104,9 @@ def find_pot_partners_horizontal (xyzDF, bool_IDs,max_freq):
 def find_pot_partners_vertical (xyzDF, bool_IDs,max_freq):
     ''' Look for partners (same gene) in other side of the grid'''
     partners,dists = {}, {}
-    pair_xdists, pair_ydists, pair_zdists = [] ,[], []      
+    pair_xdists, pair_ydists, pair_zdists = [] ,[], []  
+    pNUM = len(xyzDF) 
+    
 
     # Deal with empty input and filter out too common genes
     if len(bool_IDs) > 0: 
@@ -188,10 +191,12 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description = 'Takes a single XYZ_coordinates.txt file and searches for duplicates along grid happening at every 2144 pixels')
     parser.add_argument("input", help="Input gene xyz coordinates file")
-    parser.add_argument("tilesize", nargs = '?', type=int, default = 2144,  help="Tile size (distance between gridlines)")
+    parser.add_argument("Xtilesize", nargs = '?', type=int, default = 2144,  help="Tile size (distance between gridlines) on X axis")
+    parser.add_argument("Ytilesize", nargs = '?', type=int, default = 2144,  help="Tile size (distance between gridlines) on Y axis")
     parser.add_argument("windowsize", nargs = '?', type=int, default = 30,  help="Window arround gridlines to search for duplicates")
     parser.add_argument("maxfreq", nargs = '?', type=int, default = 400,  help="Maximum transcript count to calculate X/Y shifts (better to discard very common genes)")
     parser.add_argument("minMode", nargs = '?', type=int, default = 10,  help="Minumum occurances of ~XYZ_shift to consider it valid")
+    parser.add_argument("-p", "--plot", type=bool, default = False,  help="Illustrative lineplot of duplicated pairs with annotated XYZ shift per tileOvlap")
     args=parser.parse_args()
 
     # Sanity checks of input
@@ -211,15 +216,17 @@ if __name__ == '__main__':
     w = args.windowsize
     minMode = args.minMode
     max_freq = args.maxfreq
-    tilesize = args.tilesize #2144
+    Xtilesize = args.Xtilesize #2144
+    Ytilesize = args.Ytilesize #2140
     panoYmax, panoXmax = df.y.max(), df.x.max()
     duplicated = [] 
+    tileOvlaps, totalDups, tilePairs = 0, 0, 0
 
     # First iteration going through vertical lines 
-    for yjump in range(0, panoYmax, tilesize):
-        ymin,ymax = yjump,yjump + tilesize
+    for yjump in range(0, panoYmax, Ytilesize):
+        ymin,ymax = yjump,yjump + Ytilesize
 
-        for xjump in range(tilesize-1, panoXmax, tilesize):
+        for xjump in range(Xtilesize, panoXmax, Xtilesize):
 
             xmin,xmax = xjump - w, xjump + w
 
@@ -227,11 +234,16 @@ if __name__ == '__main__':
             df1 = df[(df.x > xmin)*(df.x < xmax) *
                      (df.y > ymin)*(df.y < ymax)].sort_values('y').reset_index()
 
+            # Skip rest if no transcripts exist 
             if df1.empty:
                 print(f'Found no transcripts within Y{xmin}:{xmax}, X{ymin}:{ymax}')
                 continue     
 
-            pNUM = len(df1) 
+            if args.plot: 
+                rectangle = plt.Rectangle((xmin,ymin), 2*w , ymax -ymin, fill=False, ec="grey", linewidth = 0.3)
+                plt.gca().add_patch(rectangle)
+
+            tilePairs +=1 
             left = df1.x < xjump
             df1['partners'] = np.empty((len(df1), 0)).tolist()
    
@@ -244,8 +256,12 @@ if __name__ == '__main__':
             df1 = df1.set_index('index')
             shift = mode3D(pair_xdists, pair_ydists, pair_zdists, minMode)
 
+            if args.plot: # Annotate plot with XYZ shift between tiles
+                plt.text(xmin-300, ymin+1000, str(shift), size = 4)
+
             # If these is a shift 
             if max(shift) > 2:
+                dups = 0 
 
                 #### Confirm duplications through mutual best partner and distance #####
                 for i in df1.index[left]:
@@ -258,15 +274,25 @@ if __name__ == '__main__':
                         bp2 = p2.best_partner
 
                         if i == bp2 and p1.best_multdist < 20:
-                            duplicated.append(i)     
+                            duplicated.append(i) 
+                            dups +=1  
+
+                            if args.plot:
+                                plt.plot([p1.point.x, p2.point.x],
+                                    [p1.point.y, p2.point.y], c = 'red', linewidth = 0.2 )
+
+                # Count Tileoverlap with at least 5 duplicated points    
+                if dups > 4: 
+                    totalDups += dups
+                    tileOvlaps +=1 
             
 
     # Second iteration going through horizontal lines    
-    for xjump in range(0, panoXmax, tilesize):
+    for xjump in range(0, panoXmax, Xtilesize):
 
-        xmin,xmax = xjump,xjump + tilesize
+        xmin,xmax = xjump,xjump + Xtilesize
 
-        for yjump in range(tilesize, panoYmax, tilesize):
+        for yjump in range(Ytilesize, panoYmax, Ytilesize):
 
             ymin,ymax = yjump -w, yjump + w
 
@@ -276,9 +302,13 @@ if __name__ == '__main__':
 
             if df1.empty:
                 print(f'Found no transcripts within Y{xmin}:{xmax}, X{ymin}:{ymax}')
-                continue   
+                continue  
 
-            pNUM = len(df1)
+            if args.plot: 
+                rectangle = plt.Rectangle((xmin,ymin), xmax -xmin, 2*w, fill=False, ec="grey", linewidth = 0.3)
+                plt.gca().add_patch(rectangle)
+
+            tilePairs +=1 
             bottom = df1.y < yjump
             df1['partners'] = np.empty((len(df1), 0)).tolist()
    
@@ -290,9 +320,14 @@ if __name__ == '__main__':
             # Use original index again and find mode of XYZ shift between potential duplicates
             df1 = df1.set_index('index')
             shift = mode3D(pair_xdists, pair_ydists, pair_zdists, minMode)
+
+            if args.plot: # Annotate plot with XYZ shift between tiles
+                plt.text(xmin+1000, ymin-100, str(shift), size = 4)
             
-            # If these is a shift 
+            # If there is a shift 
             if max(shift)> 2:
+                dups = 0 
+
                 #### Confirm real duplications by mutual best partner and max distance #####
                 for i in df1.index[bottom]:
                     
@@ -304,11 +339,33 @@ if __name__ == '__main__':
                         bp2 = p2.best_partner
                         
                         if i == bp2 and p1.best_multdist < 20:   # multdist is distance multiplied by weight vector [6,6,1], so Z variation is 6 times less relevant than XY variation
-                            duplicated.append(i ) 
+                            dups  +=1 
+                            duplicated.append(i)
 
-                #print(xmin,xmax, ymin,ymax, pNUM, len(duplicated))            
-            
+                            # Plot line between point pair if asked for
+                            if args.plot: 
+                                plt.plot([p1.point.x, p2.point.x],
+                                    [p1.point.y, p2.point.y], c = 'red', linewidth = 0.2 )
+
+                # Count Tiles as overlapping if least 10 duplicated points 
+                if dups > 9: 
+                    totalDups += dups
+                    tileOvlaps +=1 
+                    #print(xmin,xmax, ymin,ymax, pNUM, len(duplicated))            
+
+    if args.plot: 
+        plt.xlabel('X') #;  plt.xlim([df.x.min(), df.x.max()])
+        plt.ylabel('Y') #;  plt.ylim([df.y.min(), df.y.max()])
+
+        plt.savefig('XYZshift_visualization.png', dpi = 550)
 
     # Replace Gene name by Duplicated and write new XYZ.txt file 
     df.loc[duplicated, 'gene'] = 'Duplicated'
     df.to_csv(pathname + '_markedDups.txt', sep = '\t', header=None, index = False )
+
+
+    # Counts for analysis: Number of tile pairs, number of tile overlaps, total duplicated transcripts
+    print('TilePairs, Tile Overlaps, Total duplicated transcripts')
+    print(tilePairs, tileOvlaps, totalDups)
+
+
