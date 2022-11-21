@@ -1,13 +1,24 @@
-doc = ''' USAGE:   python duplicate_finder.py  <geneXYZ.txt> <Xtilesize> <Ytilesize> 
+doc = ''' USAGE:   python duplicate_finder.py  <geneXYZ.txt> <Xtilesize> [Ytilesize==Xtilesize] [windowsize] [maxfreq] [minMode]  [-p True/False] 
     (EXPERIMENTAL)
 
-   Takes a single XYZ_coordinates.txt file and searches for duplicates along grid happening at every 2144 pixels.
+   Takes a single XYZ_coordinates.txt file and searches for duplicates along grid happening at every +/- 2144 pixels.
+
+positional arguments:
+  input                 Input gene xyz coordinates file
+  Xtilesize             Tile size (distance between gridlines) on X axis. Default = 2144
+  Ytilesize             Tile size (distance between gridlines) on Y axis. Default = Xtilesize
+  windowsize            Window arround gridlines to search for duplicates. Default = 30 (to each side of gridline)
+  maxfreq               Maximum transcript count to calculate X/Y shifts (better to discard very common genes here). Default = 400
+  minMode               Minumum occurances of ~XYZ_shift to consider it valid. Default = 10 
+
+optional arguments:
+  -p PLOT, --plot PLOT  Illustrative lineplot of duplicated pairs with annotated XYZ shift per tileOvlap
 
    Several pixel distance thresholds are tweekable through user input, but are default as:
-    - The windowsize of search around the grid is 30 pixels to each side.
+    - The windowsize of search around the gridbreak is 30 pixels to each side.
     - The maximum parallel distance between potential partners is 25 (windowsize - 5) (this is not allowed: O___10____| |____15_____O but this is: O__3_| |____15_____O )
     - The maximum perpendicular shift to consider 2 transcripts potential partners is 7 pixels (hardcoded)
-    - The minimum number of transcripts having the mode XYZ shift is 10.
+    - The minimum number of transcripts having ~ mode XYZ shift is 10.
 
 
    Steps:
@@ -192,7 +203,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description = 'Takes a single XYZ_coordinates.txt file and searches for duplicates along grid happening at every 2144 pixels')
     parser.add_argument("input", help="Input gene xyz coordinates file")
     parser.add_argument("Xtilesize", nargs = '?', type=int, default = 2144,  help="Tile size (distance between gridlines) on X axis")
-    parser.add_argument("Ytilesize", nargs = '?', type=int, default = 2144,  help="Tile size (distance between gridlines) on Y axis")
+    parser.add_argument("Ytilesize", nargs = '?', type=int, default = None,  help="Tile size (distance between gridlines) on Y axis")
     parser.add_argument("windowsize", nargs = '?', type=int, default = 30,  help="Window arround gridlines to search for duplicates")
     parser.add_argument("maxfreq", nargs = '?', type=int, default = 400,  help="Maximum transcript count to calculate X/Y shifts (better to discard very common genes)")
     parser.add_argument("minMode", nargs = '?', type=int, default = 10,  help="Minumum occurances of ~XYZ_shift to consider it valid")
@@ -209,15 +220,14 @@ if __name__ == '__main__':
     df = pd.read_csv(args.input, sep = '\t', header = None)  # '../../../13_rois_for_demo/panoramas/RiceRoot_Transcripts.txt', sep = '\t', header = None)
     df = df.drop(df.columns[4:], axis = 1)
     df.columns = ['x','y','z','gene'] #,'qual']
-
-    # To test if it works on horizontal    #t = df.x.copy() ;     df.x = df.y ;     df.y = t 
     print('read input xyz dataframe')
 
+    # Prepare parameters 
     w = args.windowsize
     minMode = args.minMode
     max_freq = args.maxfreq
     Xtilesize = args.Xtilesize #2144
-    Ytilesize = args.Ytilesize #2140
+    Ytilesize = args.Xtilesize if args.Ytilesize == None else args.Ytilesize 
     panoYmax, panoXmax = df.y.max(), df.x.max()
     duplicated = [] 
     tileOvlaps, totalDups, tilePairs = 0, 0, 0
@@ -239,7 +249,7 @@ if __name__ == '__main__':
                 print(f'Found no transcripts within Y{xmin}:{xmax}, X{ymin}:{ymax}')
                 continue     
 
-            if args.plot: 
+            if args.plot: # Plot gridlines if asked
                 rectangle = plt.Rectangle((xmin,ymin), 2*w , ymax -ymin, fill=False, ec="grey", linewidth = 0.3)
                 plt.gca().add_patch(rectangle)
 
@@ -304,7 +314,7 @@ if __name__ == '__main__':
                 print(f'Found no transcripts within Y{xmin}:{xmax}, X{ymin}:{ymax}')
                 continue  
 
-            if args.plot: 
+            if args.plot: # Plot gridlines if asked
                 rectangle = plt.Rectangle((xmin,ymin), xmax -xmin, 2*w, fill=False, ec="grey", linewidth = 0.3)
                 plt.gca().add_patch(rectangle)
 
