@@ -207,7 +207,7 @@ if __name__ == '__main__':
     parser.add_argument("windowsize", nargs = '?', type=int, default = 30,  help="Window arround gridlines to search for duplicates")
     parser.add_argument("maxfreq", nargs = '?', type=int, default = 400,  help="Maximum transcript count to calculate X/Y shifts (better to discard very common genes)")
     parser.add_argument("minMode", nargs = '?', type=int, default = 10,  help="Minumum occurances of ~XYZ_shift to consider it valid")
-    parser.add_argument("-p", "--plot", type=bool, default = False,  help="Illustrative lineplot of duplicated pairs with annotated XYZ shift per tileOvlap")
+    parser.add_argument("-p", "--plot", default = None,  help="Illustrative lineplot of duplicated pairs with annotated XYZ shift per tileOvlap")
     args=parser.parse_args()
 
     # Sanity checks of input
@@ -267,7 +267,7 @@ if __name__ == '__main__':
             shift = mode3D(pair_xdists, pair_ydists, pair_zdists, minMode)
 
             if args.plot: # Annotate plot with XYZ shift between tiles
-                plt.text(xmin-300, ymin+1000, str(shift), size = 4)
+                plt.text(xmin-400, ymin+1000, str(shift), size = 4)
 
             # If these is a shift 
             if max(shift) > 2:
@@ -367,6 +367,36 @@ if __name__ == '__main__':
         plt.xlabel('X') #;  plt.xlim([df.x.min(), df.x.max()])
         plt.ylabel('Y') #;  plt.ylim([df.y.min(), df.y.max()])
 
+
+        # Plot path of microscope if -p is an existing file (positions.log file)
+        if os.path.exists(args.plot):
+            sample_name = args.input.split('_')[-2]
+
+            pos_log = pd.read_csv(args.plot, header = None)
+            pos_log.columns = ['time', 'name', 'x','y','z', 'x2','y2','z2']
+            pos_log = pos_log[[sample_name in r for r in pos_log.name]]
+            pos_log = pos_log[['X_R7' in r for r in pos_log.name]]
+
+            pos_log = pos_log.iloc[:,2:4].values
+            dif = pos_log[1][0] -pos_log[0][0]
+
+            l = (pos_log - pos_log.min(axis = 0)) 
+            l = l * Xtilesize / dif  + Xtilesize/2
+
+
+            for i,(x,y) in enumerate(l):
+                plt.annotate(i, (x-200,y-100), color = '#3776ab')
+                    
+                if i< len(l)-1:
+                    dX = l[i+1][0] - x 
+                    dY = l[i+1][1] - y 
+
+                    plt.arrow(x + dX*0.05,y +dY*0.05 , dX*0.75, dY*0.75, 
+                              head_width=100,# width = 0.8,
+                              ls='-.', color = '#89cff0') 
+
+
+        plt.gca().invert_yaxis()
         plt.savefig('XYZshift_visualization.png', dpi = 550)
 
     # Replace Gene name by Duplicated and write new XYZ.txt file 
