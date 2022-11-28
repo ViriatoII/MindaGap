@@ -57,11 +57,11 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
     #increase max allowed image size
-    #os.environ["OPENCV_IO_MAX_IMAGE_PIXELS"] = pow(2,40).__str__()
+    os.environ["OPENCV_IO_MAX_IMAGE_PIXELS"] = pow(2,40).__str__()
     
-    version_number = "0.0.1"
+    version_number = "0.0.2"
 
-    import tifffile #, cv2  
+    import tifffile,  cv2  
 
     parser = argparse.ArgumentParser(description="Takes a single panorama image and fills the empty grid lines with neighbour-weighted values" )
     parser.add_argument("input", help="Input tif/png file with grid lines to fill")
@@ -83,11 +83,11 @@ if __name__ == '__main__':
     if os.path.exists(args.input) == False:
         print("Input file does not exist!") ; exit()
 
-    # Read input as tif file or as png/
+    # Read input as tif file or as png/jpg
     if extension[1:4] == 'tif':
         img = tifffile.imread(args.input) 
     else:
-        img = plt.imread(args.input)
+        img = cv2.imread(args.input,0)
 
     # Apply fill_grids function and write to file #####
         # Work on composite images or z-layered tiffs
