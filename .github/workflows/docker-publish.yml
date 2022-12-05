@@ -42,8 +42,4 @@ jobs:
           context: .
           file: ./Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ secrets.DOCKER_USERNAME }}/mindagap:github.sha,{{ secrets.DOCKER_USERNAME }}/mindagap:latest
-          
-            
-      #- name: Image digest
-       # run: echo ${{ steps.docker_build.outputs.digest }} ${{ steps.meta.outputs.tags }}
+          tags: ${{ secrets.DOCKER_USERNAME }}/mindagap:{{ github.sha }},{{ secrets.DOCKER_USERNAME }}/mindagap:latest
