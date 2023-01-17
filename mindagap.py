@@ -1,11 +1,11 @@
-doc = ''' USAGE:   python mindagap.py  <PANORAMA.tif> <boxsize> <loopnum> <tilesize> --edges <True|False> 
+doc = ''' USAGE:   python mindagap.py  <PANORAMA.tif> <boxsize> <loopnum> -xt <Xtilesize> -yt <Ytilesize> --edges <True|False> 
 
    Takes a single panorama image and fills the empty grid lines with neighbour-weighted values.
    
    Small boxsize yields limited results but works the best with a high loop number (like 20)
    Increase boxsize to overcome bigger gaps 
    
-   <tilesize> is optional parameter to deal with adjacent tiles without gaps but where there are visible  different exposures  (EXPERIMENTAL) 
+   <tilesize> is optional parameter to deal with adjacent tiles without gaps but where there are visible different exposures  (EXPERIMENTAL) 
    
    --edges is optional parameter to blur area around grid, for smoother transitions between tiles with different exposures (EXPERIMENTAL)
    
