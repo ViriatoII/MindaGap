@@ -1,15 +1,40 @@
-doc = ''' USAGE:   python mindagap.py  <PANORAMA.tif> <boxsize> <loopnum> --edges <True|False>
+doc = ''' USAGE:   python mindagap.py  <PANORAMA.tif> <boxsize> <loopnum> <tilesize> --edges <True|False> 
 
    Takes a single panorama image and fills the empty grid lines with neighbour-weighted values.
-   Small box sizes yield limited results but work the best with a high loop number (like 20)
    
-   Increase boxsize (s) to overcome bigger gaps 
+   Small boxsize yields limited results but works the best with a high loop number (like 20)
+   Increase boxsize to overcome bigger gaps 
+   
+   <tilesize> is optional parameter to deal with adjacent tiles without gaps but where there are visible  different exposures  (EXPERIMENTAL) 
+   
    --edges is optional parameter to blur area around grid, for smoother transitions between tiles with different exposures (EXPERIMENTAL)
    
    
     27/06/2022
     Ricardo Guerreiro
-    Resolve Biosciences'''
+    Resolve Biosciences'''      
+
+    
+def read_img(path_file):
+    ''' Reads a tiff/png image into a numpy array'''
+    
+    pathname, extension = os.path.splitext(path_file)
+
+    try:
+        if not os.path.exists(path_file):
+            print(f"Input file does not exist: \n {path_file}") 
+            
+            return(0)
+
+        # Read input as tif file or as png/jpg
+        if extension[1:4] == 'tif':
+            img = tifffile.imread(path_file) 
+        else:
+            img = cv2.imread(path_file,cv2.IMREAD_UNCHANGED) 
+
+        return(img)
+    except: 
+        print(f"Input file invalid: \n {path_file}") 
 
 
 def fill_grids(img_array, box_size = 5, nloops = 1, edges = False):
@@ -18,10 +43,20 @@ def fill_grids(img_array, box_size = 5, nloops = 1, edges = False):
 
     # Grid coordinates and a copy of image
     grid_coords = img_array == 0
-    im_copy = img_array.copy()
-
+    im_copy = img_array.copy()   
+   
     # Make grid pixels have the minimum value of image (excluding 0 of grid)
     im_copy[grid_coords] = min(img_array[img_array > 0].flatten()) 
+
+    if Xtilesize: 
+       # First iteration going through vertical lines 
+       for yjump in range(Ytilesize, panoYmax, Ytilesize):
+           ymin,ymax = yjump -1 ,yjump + 2
+           grid_coords [ymin:ymax,:] = True 
+
+       for xjump in range(Xtilesize, panoXmax, Xtilesize):
+           xmin,xmax = xjump -1 ,xjump + 2
+           grid_coords [:,xmin:xmax] = True 
    
     if edges:
          # Kernel: here you should define how much the True "dilates"
@@ -66,7 +101,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Takes a single panorama image and fills the empty grid lines with neighbour-weighted values" )
     parser.add_argument("input", help="Input tif/png file with grid lines to fill")
     parser.add_argument("s", nargs = '?', type=int, default = 5,  help="Box size for gaussian kernel (bigger better for big gaps but less accurate)")
-    parser.add_argument("r", nargs = '?', type=int, default = 40, help="Number of rounds to apply gaussianBlur (more is better)")
+    parser.add_argument("r",  nargs = '?', type=int, default = 40, help="Number of rounds to apply gaussianBlur (more is better)")
+    parser.add_argument("-xt", "--Xtilesize", nargs = '?', type=int, default = None,  help="Tile size (distance between gridlines) on X axis")
+    parser.add_argument("-yt", "--Ytilesize", nargs = '?', type=int, default = None,  help="Tile size (distance between gridlines) on Y axis")
     parser.add_argument("-e", '--edges', nargs = '?', default = False, help="Also smooth edges near grid lines")
     parser.add_argument("-v", '--version', action=argparse.BooleanOptionalAction, default = False, help="Print version number.")
     args=parser.parse_args()
@@ -74,8 +111,7 @@ if __name__ == '__main__':
     if args.s % 2 == 0:
         print("-s argument must be uneven number") ; exit()
         
-    if args.version:
-        print(version_number) ; exit()
+    if args.version:        print(version_number) ; exit()
 
     # Sanity checks of input
     pathname, extension = os.path.splitext(args.input)
@@ -83,11 +119,15 @@ if __name__ == '__main__':
     if os.path.exists(args.input) == False:
         print("Input file does not exist!") ; exit()
 
+    # Inputs
+    Xtilesize = args.Xtilesize #2144
+    Ytilesize = args.Xtilesize if args.Ytilesize == None else args.Ytilesize 
+
+
     # Read input as tif file or as png/jpg
-    if extension[1:4] == 'tif':
-        img = tifffile.imread(args.input) 
-    else:
-        img = cv2.imread(args.input,0)
+    img = read_img(args.input) 
+
+    panoYmax,panoXmax  = img.shape [-2:]
 
     # Apply fill_grids function and write to file #####
         # Work on composite images or z-layered tiffs
@@ -101,8 +141,9 @@ if __name__ == '__main__':
         img = fill_grids(img_array=img, box_size = args.s, nloops= args.r, edges = args.edges)
 
 
-    # Read input as tif file or as png/
-    if extension[1:4] == 'tif':
-        tifffile.imwrite(pathname + '_gridfilled' + extension, img)
-    else:
-        plt.imsave(pathname + '_gridfilled' + extension, img)
+    # Save as tif file or as png/
+    #if extension[1:4] == 'tif':
+    #    tifffile.imwrite(pathname + '_gridfilled' + extension, img)
+    #else:
+    #    plt.imsave(pathname + '_gridfilled' + extension, img)
+    cv2.imwrite(pathname + '_gridfilled' + extension, img)
