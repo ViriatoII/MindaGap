@@ -9,6 +9,6 @@ COPY . .
 
 # Add LABEL to capture script version
 RUN version=$(python mindagap.py -v) && \
-    echo "version=$version" >> /version.txt && \
-    echo "version=$version" && \
+    echo "v=$version" >> /version.txt && \
+    echo "v=$version" && \
     chmod a+r /version.txt
