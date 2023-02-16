@@ -6,4 +6,9 @@ ARG MAMBA_DOCKERFILE_ACTIVATE=1
 WORKDIR /mindagap
 COPY . .
 
-ENTRYPOINT ["python", "mindagap.py", "-v"]
+
+# Add LABEL to capture script version
+RUN version=$(python mindagap.py -v) && \
+    echo "version=$version" >> /version.txt && \
+    echo "version=$version" && \
+    chmod a+r /version.txt
