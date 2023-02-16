@@ -5,3 +5,5 @@ RUN micromamba install -y -n base -f /tmp/env.yaml && \
 ARG MAMBA_DOCKERFILE_ACTIVATE=1
 WORKDIR /mindagap
 COPY . .
+
+CMD ["python", "mindagap.py", "-v"]
