@@ -36,9 +36,9 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
         
-      - name: Get script version
-        id: version
-        run: echo "{version}=${(python mindagap.py -v)}" >> $GITHUB_STATE
+     # - name: Get script version
+        #id: version
+        #run: echo "{version}=${(python mindagap.py -v)}" >> $GITHUB_STATE    # This give error: bad substitution
           
       - name: Build and push
         id: docker_build
