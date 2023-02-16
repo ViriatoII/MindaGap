@@ -43,19 +43,6 @@ jobs:
           context: .
           file: ./Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ secrets.DOCKER_USERNAME }}/mindagap:${{github.sha}}, ${{ secrets.DOCKER_USERNAME }}/mindagap:latest
-          
-      - name: Get version string
-        run: |
-          version=$(docker run --rm ${{ steps.docker_build.outputs.image }} -v)
-          echo "::set-output name=version::$version"
-
-      - name: Tag image with version
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: ./Dockerfile
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ secrets.DOCKER_USERNAME }}/mindagap:${{steps.docker_build.outputs.version }}, ${{ secrets.DOCKER_USERNAME }}/mindagap:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/mindagap:$(docker inspect --format '{{ index .Config.Labels "version" }}' mindagap), ${{ secrets.DOCKER_USERNAME }}/mindagap:latest
 
 
