@@ -8,7 +8,7 @@ COPY . .
 
 
 # Set a label with the version information
-ARG VERSION
-LABEL version=$VERSION
+#ARG VERSION
+#LABEL version=$VERSION
 
-CMD ["python", "mindagap.py", "-v"]
+#CMD ["python", "mindagap.py", "-v"]  # Seems to give error of uninstalled library
