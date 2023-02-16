@@ -6,4 +6,4 @@ ARG MAMBA_DOCKERFILE_ACTIVATE=1
 WORKDIR /mindagap
 COPY . .
 
-CMD ["python", "mindagap.py", "-v"]
+ENTRYPOINT ["python", "mindagap.py", "-v"]
