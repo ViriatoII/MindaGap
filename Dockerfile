@@ -6,7 +6,9 @@ ARG MAMBA_DOCKERFILE_ACTIVATE=1
 WORKDIR /mindagap
 COPY . .
 
-RUN version=$(python mindagap.py -v) && \
-    echo "version=$version" >> /version.txt && \
-    echo "version=$version" && \
-    chmod a+r /version.txt
+
+# Set a label with the version information
+ARG VERSION
+LABEL version=$VERSION
+
+CMD ["python", "mindagap.py", "-v"]
