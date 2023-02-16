@@ -35,7 +35,11 @@ jobs:
           password: ${{ secrets.DOCKER_PWORD }}
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-
+        
+      - name: Get script version
+        id: version
+        run: echo "::set-output name=version::$(python mindagap.py -v)"
+          
       - name: Build and push
         id: docker_build
         uses: docker/build-push-action@v2
