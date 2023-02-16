@@ -56,6 +56,6 @@ jobs:
           context: .
           file: ./Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ secrets.DOCKER_USERNAME }}/mindagap:${{steps.get_version.outputs.version }}, ${{ secrets.DOCKER_USERNAME }}/mindagap:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/mindagap:${{steps.docker_build.outputs.version }}, ${{ secrets.DOCKER_USERNAME }}/mindagap:latest
 
 
