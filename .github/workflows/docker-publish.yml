@@ -38,7 +38,7 @@ jobs:
         
       - name: Get script version
         id: version
-        run: echo "::set-output name=version::$(python mindagap.py -v)"
+        run: echo "{version}=${(python mindagap.py -v)}" >> $GITHUB_STATE
           
       - name: Build and push
         id: docker_build
