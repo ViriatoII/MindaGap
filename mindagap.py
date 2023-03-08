@@ -96,7 +96,7 @@ if __name__ == '__main__':
     #increase max allowed image size
     os.environ["OPENCV_IO_MAX_IMAGE_PIXELS"] = pow(2,40).__str__()
     
-    version_number = "0.0.2"
+    version_number = "0.0.3"
 
     import tifffile,  cv2  
 
