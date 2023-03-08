@@ -57,6 +57,7 @@ def fill_grids(img_array, box_size = 5, nloops = 1, edges = False):
        for xjump in range(Xtilesize, panoXmax, Xtilesize):
            xmin,xmax = xjump -1 ,xjump + 2
            grid_coords [:,xmin:xmax] = True 
+    print("Test 2")
    
     if edges:
          # Kernel: here you should define how much the True "dilates"
@@ -68,7 +69,7 @@ def fill_grids(img_array, box_size = 5, nloops = 1, edges = False):
                                     expansion.astype(int), mode='same').astype(bool)
    
     # Create a blurred image and replace original grid positions by new blur value. Iterate
-    for i in range(nloops):
+    for i in track(range(nloops),description='[green]Applying Gaussian Blur to gridlines ...'):
 
         # Smooth edges as well (last loops only) if asked
         if edges and (i > nloops -5):
@@ -90,6 +91,7 @@ if __name__ == '__main__':
     from scipy.signal import convolve2d
     import numpy as np
     import matplotlib.pyplot as plt
+    from rich.progress import track
 
     #increase max allowed image size
     os.environ["OPENCV_IO_MAX_IMAGE_PIXELS"] = pow(2,40).__str__()
@@ -128,6 +130,8 @@ if __name__ == '__main__':
     img = read_img(args.input) 
 
     panoYmax,panoXmax  = img.shape [-2:]
+    
+    print("Test 1")
 
     # Apply fill_grids function and write to file #####
         # Work on composite images or z-layered tiffs
@@ -139,6 +143,7 @@ if __name__ == '__main__':
 
     else: # Work on 2D images
         img = fill_grids(img_array=img, box_size = args.s, nloops= args.r, edges = args.edges)
+
 
 
     # Save as tif file or as png/
