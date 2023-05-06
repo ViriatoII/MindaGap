@@ -107,7 +107,7 @@ if __name__ == '__main__':
     parser.add_argument("-xt", "--Xtilesize", nargs = '?', type=int, default = None,  help="Tile size (distance between gridlines) on X axis")
     parser.add_argument("-yt", "--Ytilesize", nargs = '?', type=int, default = None,  help="Tile size (distance between gridlines) on Y axis")
     parser.add_argument("-e", '--edges', nargs = '?', default = False, help="Also smooth edges near grid lines")
-    parser.add_argument("-v", '--version', action=argparse.BooleanOptionalAction, default = False, help="Print version number.")
+    parser.add_argument("-v", '--version', action='store_true', default=False, help="Print version number.")
     args=parser.parse_args()
 
     if args.s % 2 == 0:
