@@ -76,3 +76,8 @@ docker build -t mindagap .
 docker run --rm -it mindagap:latest \
 python /mindagap/mindagap.py
 ```
+
+
+How to cite 
+--------------
+      Ricardo Guerreiro, Florian Wuennemann, & pvtodorov. (2023). ViriatoII/MindaGap: v0.0.3 (0.0.3). Zenodo. https://doi.org/10.5281/zenodo.8120559
