@@ -1,4 +1,8 @@
-# MindaGap
+# MindaGap 
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8120559.svg)](https://doi.org/10.5281/zenodo.8120559)
+
+
    Takes a single panorama image and fills the empty grid lines with neighbour-weighted values.
    Small box sizes yield limited results but work the best with a high loop number (like 40).  Increase boxsize to overcome bigger gaps.
  
