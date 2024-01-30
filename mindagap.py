@@ -37,13 +37,14 @@ def read_img(path_file):
         print(f"Input file invalid: \n {path_file}") 
 
 
-def fill_grids(img_array, box_size = 5, nloops = 1, edges = False):
+def fill_grids(img_array, box_size = 5, nloops = 1, edges = 0, Xtilesize = None):
     ''' Fills grid locations (pixel val 0) with values from neighbourhood through a gaussian kernel 
     Small box sizes yield limited results but work the best with a high loop number (like 20)'''
 
     # Grid coordinates and a copy of image
     grid_coords = img_array == 0
     im_copy = img_array.copy()   
+    edges = int(edges)
    
     # Make grid pixels have the minimum value of image (excluding 0 of grid)
     im_copy[grid_coords] = min(img_array[img_array > 0].flatten()) 
@@ -58,9 +59,9 @@ def fill_grids(img_array, box_size = 5, nloops = 1, edges = False):
            xmin,xmax = xjump -1 ,xjump + 2
            grid_coords [:,xmin:xmax] = True 
    
-    if edges:
+    if edges > 0:
          # Kernel: here you should define how much the True "dilates"
-         expansion = np.array([[True] *20] *20)
+         expansion = np.array([[True] *edges] *edges)
 
          # Expand/dilate grid   (https://python.tutorialink.com/how-to-expand-dilate-a-numpy-array/)
          # Convolution is not possible for bool values, so we convert to int and back. That works because bool(N) == True if N != 0.
@@ -72,7 +73,8 @@ def fill_grids(img_array, box_size = 5, nloops = 1, edges = False):
 
         # Smooth edges as well (last loops only) if asked
         if edges and (i > nloops -5):
-            blur_img = cv2.GaussianBlur(im_copy,(box_size,box_size), 0)  
+            #blur_img = cv2.GaussianBlur(im_copy,(box_size,box_size), 0)  
+            blur_img =  cv2.medianBlur(im_copy,box_size,cv2.BORDER_DEFAULT) 
             im_copy[expanded_grid] = blur_img[expanded_grid]     
             
         else: # Main condition
@@ -94,21 +96,21 @@ if __name__ == '__main__':
     #increase max allowed image size
     os.environ["OPENCV_IO_MAX_IMAGE_PIXELS"] = pow(2,40).__str__()
     
-    version_number = "0.0.2"
+    version_number = "0.0.4"
 
     import tifffile,  cv2  
 
     parser = argparse.ArgumentParser(description="Takes a single panorama image and fills the empty grid lines with neighbour-weighted values" )
     parser.add_argument("input", help="Input tif/png file with grid lines to fill")
-    parser.add_argument("s", nargs = '?', type=int, default = 5,  help="Box size for gaussian kernel (bigger better for big gaps but less accurate)")
-    parser.add_argument("r",  nargs = '?', type=int, default = 40, help="Number of rounds to apply gaussianBlur (more is better)")
+    parser.add_argument("-s", "--sizekernel", nargs = '?', type=int, default = 5,  help="Box size for gaussian kernel (bigger better for big gaps but less accurate)")
+    parser.add_argument("-r", "--rounds",    nargs = '?', type=int, default = 40, help="Number of rounds to apply gaussianBlur (more is better)")
     parser.add_argument("-xt", "--Xtilesize", nargs = '?', type=int, default = None,  help="Tile size (distance between gridlines) on X axis")
     parser.add_argument("-yt", "--Ytilesize", nargs = '?', type=int, default = None,  help="Tile size (distance between gridlines) on Y axis")
-    parser.add_argument("-e", '--edges', nargs = '?', default = False, help="Also smooth edges near grid lines")
-    parser.add_argument("-v", '--version', action=argparse.BooleanOptionalAction, default = False, help="Print version number.")
+    parser.add_argument("-e", '--edges', nargs = '?', default = 0, help="Also smooth edges near grid lines")
+    parser.add_argument("-v", '--version', action='store_true', default = False, help="Print version number.")
     args=parser.parse_args()
 
-    if args.s % 2 == 0:
+    if args.sizekernel % 2 == 0:
         print("-s argument must be uneven number") ; exit()
         
     if args.version:        print(version_number) ; exit()
@@ -126,7 +128,6 @@ if __name__ == '__main__':
 
     # Read input as tif file or as png/jpg
     img = read_img(args.input) 
-
     panoYmax,panoXmax  = img.shape [-2:]
 
     # Apply fill_grids function and write to file #####
@@ -134,16 +135,17 @@ if __name__ == '__main__':
     if len(img.shape) > 2: 
         layers = []
         for l in range(img.shape[0]):
-            layers.append(fill_grids(img_array=img[l,:,:], box_size = args.s, nloops= args.r, edges = args.edges))
+            layers.append(fill_grids(img_array=img[l,:,:], box_size = args.sizekernel, nloops= args.rounds, edges = args.edges))
         img = np.array(layers )
 
     else: # Work on 2D images
-        img = fill_grids(img_array=img, box_size = args.s, nloops= args.r, edges = args.edges)
+        img = fill_grids(img_array=img, box_size = args.sizekernel, nloops= args.rounds, edges = args.edges)
 
 
     # Save as tif file or as png/
-    #if extension[1:4] == 'tif':
-    #    tifffile.imwrite(pathname + '_gridfilled' + extension, img)
-    #else:
-    #    plt.imsave(pathname + '_gridfilled' + extension, img)
-    cv2.imwrite(pathname + '_gridfilled' + extension, img)
+    #cv2.imwrite(pathname + '_gridfilled' + extension, img)
+
+    if 'tif' in extension:
+        tifffile.imwrite(pathname + '_gridfilled' + extension, img)
+    else:
+        cv2.imwrite(pathname + '_gridfilled' + extension, img)
