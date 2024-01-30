@@ -1,11 +1,10 @@
-doc = ''' USAGE:   python mindagap.py  <PANORAMA.tif> <boxsize> <loopnum> <tilesize> --edges <True|False> 
+doc = ''' USAGE:   python mindagap.py  <PANORAMA.tif> <boxsize> <loopnum> -xt <Xtilesize> -yt <Ytilesize> --edges <True|False> 
 
    Takes a single panorama image and fills the empty grid lines with neighbour-weighted values.
    
    Small boxsize yields limited results but works the best with a high loop number (like 20)
    Increase boxsize to overcome bigger gaps 
-   
-   <tilesize> is optional parameter to deal with adjacent tiles without gaps but where there are visible  different exposures  (EXPERIMENTAL) 
+   <tilesize> is optional parameter to deal with adjacent tiles without gaps but where there are visible different exposures  (EXPERIMENTAL) 
    
    --edges is optional parameter to blur area around grid, for smoother transitions between tiles with different exposures (EXPERIMENTAL)
    
@@ -58,9 +57,12 @@ def fill_grids(img_array, box_size = 5, nloops = 1, edges = 0, Xtilesize = None)
        for xjump in range(Xtilesize, panoXmax, Xtilesize):
            xmin,xmax = xjump -1 ,xjump + 2
            grid_coords [:,xmin:xmax] = True 
+    print("Test 2")
    
+
     if edges > 0:
          # Kernel: here you should define how much the True "dilates"
+
          expansion = np.array([[True] *edges] *edges)
 
          # Expand/dilate grid   (https://python.tutorialink.com/how-to-expand-dilate-a-numpy-array/)
@@ -69,11 +71,10 @@ def fill_grids(img_array, box_size = 5, nloops = 1, edges = 0, Xtilesize = None)
                                     expansion.astype(int), mode='same').astype(bool)
    
     # Create a blurred image and replace original grid positions by new blur value. Iterate
-    for i in range(nloops):
+    for i in track(range(nloops),description='[green]Applying Gaussian Blur to gridlines ...'):
 
         # Smooth edges as well (last loops only) if asked
         if edges and (i > nloops -5):
-            #blur_img = cv2.GaussianBlur(im_copy,(box_size,box_size), 0)  
             blur_img =  cv2.medianBlur(im_copy,box_size,cv2.BORDER_DEFAULT) 
             im_copy[expanded_grid] = blur_img[expanded_grid]     
             
@@ -92,6 +93,7 @@ if __name__ == '__main__':
     from scipy.signal import convolve2d
     import numpy as np
     import matplotlib.pyplot as plt
+    from rich.progress import track
 
     #increase max allowed image size
     os.environ["OPENCV_IO_MAX_IMAGE_PIXELS"] = pow(2,40).__str__()
@@ -106,9 +108,10 @@ if __name__ == '__main__':
     parser.add_argument("-r", "--rounds",    nargs = '?', type=int, default = 40, help="Number of rounds to apply gaussianBlur (more is better)")
     parser.add_argument("-xt", "--Xtilesize", nargs = '?', type=int, default = None,  help="Tile size (distance between gridlines) on X axis")
     parser.add_argument("-yt", "--Ytilesize", nargs = '?', type=int, default = None,  help="Tile size (distance between gridlines) on Y axis")
+
     parser.add_argument("-e", '--edges', nargs = '?', default = 0, help="Also smooth edges near grid lines")
-    parser.add_argument("-v", '--version', action='store_true', default = False, help="Print version number.")
-    args=parser.parse_args()
+    parser.add_argument("-v", '--version', action='store_true', default = False, help="Print version number.")    args=parser.parse_args()
+
 
     if args.sizekernel % 2 == 0:
         print("-s argument must be uneven number") ; exit()
@@ -129,20 +132,26 @@ if __name__ == '__main__':
     # Read input as tif file or as png/jpg
     img = read_img(args.input) 
     panoYmax,panoXmax  = img.shape [-2:]
+    
+    print("Test 1")
 
     # Apply fill_grids function and write to file #####
         # Work on composite images or z-layered tiffs
     if len(img.shape) > 2: 
         layers = []
         for l in range(img.shape[0]):
+
             layers.append(fill_grids(img_array=img[l,:,:], box_size = args.sizekernel, nloops= args.rounds, edges = args.edges))
         img = np.array(layers )
 
     else: # Work on 2D images
+
         img = fill_grids(img_array=img, box_size = args.sizekernel, nloops= args.rounds, edges = args.edges)
 
 
+
     # Save as tif file or as png/
+
     #cv2.imwrite(pathname + '_gridfilled' + extension, img)
 
     if 'tif' in extension:

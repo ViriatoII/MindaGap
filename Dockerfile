@@ -5,3 +5,10 @@ RUN micromamba install -y -n base -f /tmp/env.yaml && \
 ARG MAMBA_DOCKERFILE_ACTIVATE=1
 WORKDIR /mindagap
 COPY . .
+
+
+# Set a label with the version information
+#ARG VERSION
+#LABEL version=$VERSION
+
+#CMD ["python", "mindagap.py", "-v"]  # Seems to give error of uninstalled library
