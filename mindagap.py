@@ -110,7 +110,8 @@ if __name__ == '__main__':
     parser.add_argument("-yt", "--Ytilesize", nargs = '?', type=int, default = None,  help="Tile size (distance between gridlines) on Y axis")
 
     parser.add_argument("-e", '--edges', nargs = '?', default = 0, help="Also smooth edges near grid lines")
-    parser.add_argument("-v", '--version', action='store_true', default = False, help="Print version number.")    args=parser.parse_args()
+    parser.add_argument("-v", '--version', action='store_true', default = False, help="Print version number.")
+    args=parser.parse_args()
 
 
     if args.sizekernel % 2 == 0:
